@@ -1,7 +1,7 @@
 document.getElementById('generate-btn').addEventListener('click', () => {
     const character = generateCharacter();
     displayCharacter(character);
-    populateWeaponSelectors()
+    populateWeaponSelectors();
 });
 
 document.getElementById('save-btn').addEventListener('click', () => {
@@ -10,9 +10,35 @@ document.getElementById('save-btn').addEventListener('click', () => {
 });
 
 document.getElementById('load-btn').addEventListener('click', () => {
-    const characters = loadCharacters();
-    alert(`You have ${characters.length} saved characters.`);
+    const characters = getSavedCharacters();
+    const listDiv = document.getElementById('saved-characters-list');
+
+    if (characters.length === 0) {
+        listDiv.innerHTML = "<p>No saved characters found.</p>";
+    } else {
+        listDiv.innerHTML = characters.map((char, index) => `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span>${char.name} the ${char.class}</span>
+                <div>
+                    <button class="btn btn-sm btn-primary me-2" onclick="loadCharacter(${index})">Load</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCharacter(${index})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('loadCharactersModal'));
+    modal.show();
 });
+
+function loadCharacter(index) {
+    const characters = getSavedCharacters();
+    if (characters[index]) {
+        displayCharacter(characters[index]);
+        bootstrap.Modal.getInstance(document.getElementById('loadCharactersModal')).hide();
+    }
+    populateWeaponSelectors();
+}
 
 let currentCharacter = {};
 
@@ -88,3 +114,10 @@ function showAttackResult(result) {
     resultDiv.textContent = result;
     resultDiv.classList.remove('d-none');
 }
+
+document.getElementById('clear-saves-btn').addEventListener('click', () => {
+    if (confirm("Are you sure you want to delete ALL saved characters?")) {
+        localStorage.removeItem('dccCharacters');
+        alert("All saved characters have been cleared.");
+    }
+});
