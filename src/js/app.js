@@ -1,8 +1,11 @@
 document.getElementById('generate-btn').addEventListener('click', () => {
     const character = generateCharacter();
+    const name = prompt("Enter your character's name:", "Unnamed Adventurer");
+    character.name = name ? name.trim() : "Unnamed Adventurer";
     displayCharacter(character);
     populateWeaponSelectors();
 });
+
 
 document.getElementById('save-btn').addEventListener('click', () => {
     const character = currentCharacter;
@@ -21,6 +24,7 @@ document.getElementById('load-btn').addEventListener('click', () => {
                 <span>${char.name} the ${char.class}</span>
                 <div>
                     <button class="btn btn-sm btn-primary me-2" onclick="loadCharacter(${index})">Load</button>
+                    <button class="btn btn-sm btn-warning me-2" onclick="renameSavedCharacter(${index})">Rename</button>
                     <button class="btn btn-sm btn-danger" onclick="deleteCharacter(${index})">Delete</button>
                 </div>
             </div>
@@ -47,7 +51,10 @@ function displayCharacter(character) {
     const sheet = document.getElementById('character-sheet');
 
     sheet.innerHTML = `
-        <h3 class="text-center">${character.name} the ${character.class}</h3>
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>${character.name} the ${character.class}</h3>
+            <button class="btn btn-sm btn-outline-secondary" onclick="renameCurrentCharacter()">Rename</button>
+        </div>
         <div class="row text-center my-3">
             ${renderStat("Strength", character.strength, character.modifiers.strength)}
             ${renderStat("Agility", character.agility, character.modifiers.agility)}
@@ -121,3 +128,23 @@ document.getElementById('clear-saves-btn').addEventListener('click', () => {
         alert("All saved characters have been cleared.");
     }
 });
+
+function renameCurrentCharacter() {
+    const newName = prompt("Enter a new name for your character:", currentCharacter.name);
+    if (newName && newName.trim() !== "") {
+        currentCharacter.name = newName.trim();
+        displayCharacter(currentCharacter);
+    }
+}
+
+function renameSavedCharacter(index) {
+    let characters = getSavedCharacters();
+    const currentName = characters[index].name;
+    const newName = prompt(`Rename "${currentName}" to:`, currentName);
+    if (newName && newName.trim() !== "") {
+        characters[index].name = newName.trim();
+        localStorage.setItem('dccCharacters', JSON.stringify(characters));
+        alert("Character renamed.");
+        document.getElementById('load-btn').click();  // Refresh modal list
+    }
+}
